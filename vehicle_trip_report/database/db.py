@@ -1,15 +1,18 @@
-import sqlite3
 import os
 import sys
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 # Ensure config can be imported if this is run directly
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from config import DB_PATH
+from config import DATABASE_URL, DB_PATH
 
 def get_connection():
-    """Returns a connection to the SQLite database."""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    """Returns a connection to the PostgreSQL database."""
+    if not DATABASE_URL:
+        raise ValueError("DATABASE_URL environment variable is not set. Please set it in your .env file.")
+    
+    conn = psycopg2.connect(DATABASE_URL)
     return conn
 
 def init_db():
@@ -19,7 +22,7 @@ def init_db():
     
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS vehicle_trips (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             s_no INTEGER,
             rst_no TEXT NOT NULL,
             vehicle_no TEXT NOT NULL,
@@ -37,8 +40,9 @@ def init_db():
     ''')
     
     conn.commit()
+    cursor.close()
     conn.close()
 
 if __name__ == "__main__":
     init_db()
-    print(f"Database initialized at {DB_PATH}")
+    print(f"Database initialized.")

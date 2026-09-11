@@ -1,5 +1,9 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Base directories
 BASE_DIR = Path(__file__).parent.absolute()
@@ -14,8 +18,9 @@ BACKUPS_DIR = DATA_DIR / "backups"
 for directory in [IMAGES_DIR, REPORTS_DIR, DATABASE_DIR, BACKUPS_DIR]:
     directory.mkdir(parents=True, exist_ok=True)
 
-# Database file
+# Database configuration
 DB_PATH = DATABASE_DIR / "vehicle_trips.db"
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 # Excel configuration
 DEFAULT_REPORT_PREFIX = "Vehicle_Trip_Report_"
