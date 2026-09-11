@@ -62,7 +62,7 @@ menu = st.sidebar.radio("Go To", ["Upload & OCR", "Search Database", "Excel Repo
 def load_ocr_engine():
     # Only imports and loads paddleocr when needed
     from paddleocr import PaddleOCR
-    return PaddleOCR(use_angle_cls=False, lang='en', show_log=False)
+    return PaddleOCR(use_angle_cls=False, lang='en')
 
 # --- Section 1: Upload & OCR ---
 if menu == "Upload & OCR":
