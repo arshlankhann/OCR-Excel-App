@@ -1,4 +1,3 @@
-from paddleocr import PaddleOCR
 from ocr.preprocessing import preprocess_image
 from ocr.extractor import extract_fields
 import cv2
@@ -8,12 +7,6 @@ import logging
 
 # Suppress PaddleOCR warnings about the disabled angle classifier
 logging.getLogger('ppocr').setLevel(logging.ERROR)
-
-try:
-    ocr = PaddleOCR(use_angle_cls=False, lang='en', show_log=False)
-except Exception as e:
-    print(f"Failed to initialize PaddleOCR: {e}")
-    ocr = None
 
 def rotate_image_file(image_path, angle):
     """Rotates the image and overwrites the file."""
@@ -28,13 +21,13 @@ def rotate_image_file(image_path, angle):
         img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
     cv2.imwrite(image_path, img)
 
-def process_slip(image_path):
+def process_slip(image_path, ocr_engine):
     """
     Processes a weighment slip image. Tries 4 rotations (0, 90, 180, 270)
     to find the one that yields the most OCR fields. If the best rotation
     is not 0, it permanently rotates the image so it is displayed horizontally.
     """
-    if ocr is None:
+    if ocr_engine is None:
         return {"error": "OCR engine not initialized."}
         
     try:
@@ -66,7 +59,7 @@ def process_slip(image_path):
             current_results = {"rst_no": None, "vehicle_no": None, "net_weight": None, "agency_name": None}
             
             for img_version in image_versions:
-                result = ocr.ocr(img_version, cls=True)
+                result = ocr_engine.ocr(img_version, cls=True)
                 if not result or not result[0]:
                     continue
                     

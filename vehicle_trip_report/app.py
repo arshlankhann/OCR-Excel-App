@@ -61,8 +61,8 @@ menu = st.sidebar.radio("Go To", ["Upload & OCR", "Search Database", "Excel Repo
 @st.cache_resource
 def load_ocr_engine():
     # Only imports and loads paddleocr when needed
-    from ocr.engine import process_slip
-    return process_slip
+    from paddleocr import PaddleOCR
+    return PaddleOCR(use_angle_cls=False, lang='en', show_log=False)
 
 # --- Section 1: Upload & OCR ---
 if menu == "Upload & OCR":
@@ -113,7 +113,8 @@ if menu == "Upload & OCR":
         if not images_to_process:
             st.warning("Please upload at least one image.")
         else:
-            process_slip_func = load_ocr_engine()
+            ocr_engine = load_ocr_engine()
+            from ocr.engine import process_slip
             
             progress_bar = st.progress(0)
             status_text = st.empty()
@@ -125,7 +126,7 @@ if menu == "Upload & OCR":
                 saved_path = save_uploaded_image(img_file)
                 
                 # Run OCR
-                ocr_result = process_slip_func(saved_path)
+                ocr_result = process_slip(saved_path, ocr_engine)
                 
                 if "error" in ocr_result:
                     st.error(f"Error processing {img_file.name}: {ocr_result['error']}")
