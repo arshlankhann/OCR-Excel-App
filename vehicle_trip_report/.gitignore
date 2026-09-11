@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Database
+*.sqlite3
+*.db
+
+# Uploads and generated files
+uploads/
+reports/
+*.xlsx
+*.jpg
+*.jpeg
+*.png
+
+# Streamlit
+.streamlit/
