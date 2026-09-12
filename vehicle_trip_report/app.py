@@ -61,13 +61,16 @@ menu = st.sidebar.radio("Go To", ["Upload & OCR", "Search Database", "Excel Repo
 @st.cache_resource
 def load_ocr_engine():
     import os
-    # Force PaddlePaddle to use minimal memory to prevent Streamlit Cloud crashes
+    # Force PaddlePaddle to use minimal memory to prevent Streamlit Cloud OOM crashes
     os.environ['FLAGS_allocator_strategy'] = 'naive_best_fit'
+    os.environ['FLAGS_fraction_of_cpu_memory_to_use'] = '0.8'
     os.environ['OMP_NUM_THREADS'] = '1'
+    os.environ['MKL_NUM_THREADS'] = '1'
     
     # Only imports and loads paddleocr when needed
     from paddleocr import PaddleOCR
-    return PaddleOCR(use_angle_cls=False, lang='en', use_gpu=False)
+    # enable_mkldnn=False disables Intel's heavy math library which is a big memory hog
+    return PaddleOCR(use_angle_cls=False, lang='en', use_gpu=False, enable_mkldnn=False)
 
 # --- Section 1: Upload & OCR ---
 if menu == "Upload & OCR":
