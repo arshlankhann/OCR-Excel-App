@@ -70,7 +70,8 @@ def load_ocr_engine():
     # Only imports and loads paddleocr when needed
     from paddleocr import PaddleOCR
     # enable_mkldnn=False disables Intel's heavy math library which is a big memory hog
-    return PaddleOCR(use_angle_cls=False, lang='en', use_gpu=False, enable_mkldnn=False)
+    # cpu_threads=1 prevents 10 threads from each allocating memory buffers
+    return PaddleOCR(use_angle_cls=False, lang='en', use_gpu=False, enable_mkldnn=False, cpu_threads=1)
 
 # --- Section 1: Upload & OCR ---
 if menu == "Upload & OCR":
