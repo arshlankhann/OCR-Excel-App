@@ -1,0 +1,1 @@
+import sys; sys.path.append('.'); from database.db import get_connection; conn=get_connection(); cur=conn.cursor(); cur.execute("SELECT agency_name, SUM(CAST(net_weight AS NUMERIC)) FROM vehicle_trips WHERE trip_date='04-09-2026' GROUP BY agency_name"); print('Day 4 Sums:', cur.fetchall()); cur.close(); conn.close()

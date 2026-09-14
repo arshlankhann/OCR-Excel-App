@@ -1,0 +1,114 @@
+
+Sep 1-11 Summary Import
+Total records generated to insert: 739
+  ERROR M80100: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80100, Pratapgarh, Input) already exists.
+
+  ERROR M80101: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80101, Pratapgarh, Input) already exists.
+
+  ERROR M80102: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80102, Pratapgarh, Input) already exists.
+
+  ERROR M80103: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80103, Pratapgarh, Input) already exists.
+
+  ERROR M80104: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80104, Pratapgarh, Input) already exists.
+
+  ERROR M80105: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80105, Pratapgarh, Input) already exists.
+
+  ERROR M80106: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80106, Pratapgarh, Input) already exists.
+
+  ERROR M80107: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80107, Pratapgarh, Input) already exists.
+
+  ERROR M80108: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80108, Pratapgarh, Input) already exists.
+
+  ERROR M80109: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80109, Pratapgarh, Input) already exists.
+
+  ERROR M80110: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80110, Pratapgarh, Input) already exists.
+
+  ERROR M80111: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80111, Pratapgarh, Input) already exists.
+
+  ERROR M80112: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80112, Pratapgarh, Input) already exists.
+
+  ERROR M80113: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80113, Pratapgarh, Input) already exists.
+
+  ERROR M80114: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80114, Pratapgarh, Input) already exists.
+
+  ERROR M80115: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80115, Pratapgarh, Input) already exists.
+
+  ERROR M80116: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80116, Pratapgarh, Input) already exists.
+
+  ERROR M80117: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80117, Pratapgarh, Input) already exists.
+
+  ERROR M80118: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80118, Pratapgarh, Input) already exists.
+
+  ERROR M80119: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80119, Pratapgarh, Input) already exists.
+
+  ERROR M80120: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80120, Pratapgarh, Input) already exists.
+
+  ERROR M80121: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80121, Pratapgarh, Input) already exists.
+
+  ERROR M80122: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80122, Mujeri, Input) already exists.
+
+  ERROR M80123: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80123, Mujeri, Input) already exists.
+
+  ERROR M80124: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80124, Mujeri, Input) already exists.
+
+  ERROR M80125: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80125, Mujeri, Input) already exists.
+
+  ERROR M80126: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80126, Mujeri, Input) already exists.
+
+  ERROR M80127: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80127, Mujeri, Input) already exists.
+
+  ERROR M80128: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80128, Mujeri, Input) already exists.
+
+  ERROR M80129: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80129, Mujeri, Input) already exists.
+
+  ERROR M80130: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80130, Mujeri, Input) already exists.
+
+  ERROR M80131: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80131, Mujeri, Input) already exists.
+
+  ERROR M80132: duplicate key value violates unique constraint "vehicle_trips_rst_no_processing_unit_slip_type_key"
+DETAIL:  Key (rst_no, processing_unit, slip_type)=(M80132, Mujeri, Input) already exists.
+
+  Cleared 31 existing records for 02-09-2026
+  Cleared 31 existing records for 03-09-2026
+  Cleared 73 existing records for 04-09-2026
+  Cleared 69 existing records for 05-09-2026
+  Cleared 85 existing records for 06-09-2026
+  Cleared 41 existing records for 07-09-2026
+  Cleared 155 existing records for 08-09-2026
+  Cleared 123 existing records for 09-09-2026
+  Cleared 53 existing records for 10-09-2026
+  Cleared 45 existing records for 11-09-2026
+
+Done! Inserted: 706 | Errors: 33

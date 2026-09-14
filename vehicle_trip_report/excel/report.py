@@ -286,31 +286,46 @@ def generate_monthly_summary(month_year_str, records, slip_type="Input"):
         
     pivot_all['Total Weight (kg)'] = pivot_all.sum(axis=1)
     pivot_all.loc['Total'] = pivot_all.sum()
+    # Add MT column (kg / 1000, rounded to 2 dp)
+    pivot_all['Total Weight (MT)'] = (pivot_all['Total Weight (kg)'] / 1000).round(2)
+    # Explicitly set Total row MT (pandas may not propagate new columns to .loc-set rows)
+    pivot_all.loc['Total', 'Total Weight (MT)'] = round(float(pivot_all.loc['Total', 'Total Weight (kg)']) / 1000, 2)
     
-    # Reorder columns by processing unit
+    # Reorder columns by processing unit.
+    # Store per_unit_agencies so we can reuse the same deduplicated list for merging.
     ordered_agencies = []
-    unit_headers = ["Day (Date)"]
-    agency_headers = [" "]
-    
+    unit_headers     = ["Day (Date)"]
+    agency_headers   = [" "]
+    per_unit_agencies = {}   # unit_name -> list of agencies actually used
+
     for unit_name, agencies in UNIT_AGENCIES.items():
-        # Agencies present in this month's data
-        unit_agencies_in_data = [a for a in agencies if a in pivot_all.columns and a != "Total Weight (kg)" and a not in ordered_agencies]
+        # Only add agencies not yet in ordered_agencies (avoids double-counting shared ones like Government)
+        unit_agencies_in_data = [a for a in agencies
+                                  if a in pivot_all.columns
+                                  and a not in ("Total Weight (kg)", "Total Weight (MT)")
+                                  and a not in ordered_agencies]
+        per_unit_agencies[unit_name] = unit_agencies_in_data
         if unit_agencies_in_data:
             ordered_agencies.extend(unit_agencies_in_data)
             unit_headers.extend([unit_name] + [" "] * (len(unit_agencies_in_data) - 1))
             agency_headers.extend(unit_agencies_in_data)
-            
+
     # Add any leftovers that might not be mapped
-    leftovers = [a for a in pivot_all.columns if a not in ordered_agencies and a != "Total Weight (kg)"]
+    leftovers = [a for a in pivot_all.columns
+                 if a not in ordered_agencies
+                 and a not in ("Total Weight (kg)", "Total Weight (MT)")]
     if leftovers:
         ordered_agencies.extend(leftovers)
         unit_headers.extend(["Other"] + [" "] * (len(leftovers) - 1))
         agency_headers.extend(leftovers)
-        
+
     ordered_agencies.append("Total Weight (kg)")
     unit_headers.append("Total Weight (kg)")
     agency_headers.append(" ")
-    
+    ordered_agencies.append("Total Weight (MT)")
+    unit_headers.append("Total Weight (MT)")
+    agency_headers.append(" ")
+
     # Reorder pivot_all columns
     pivot_all = pivot_all[ordered_agencies]
     
@@ -324,8 +339,16 @@ def generate_monthly_summary(month_year_str, records, slip_type="Input"):
         for cell in row:
             if cell.value is None or cell.value == "":
                 cell.value = " "
-            cell.font = Font(name="Arial", size=11, bold=True, color="FFFFFFFF")
-            cell.fill = PatternFill(start_color="FF366092", end_color="FF366092", fill_type="solid")
+            # Give MT column a distinct green tint so it stands out
+            col_idx = cell.column
+            is_mt_col = (cell.value == "Total Weight (MT)" or 
+                         (cell.row == 4 and col_idx == len(unit_headers)))
+            if is_mt_col:
+                cell.font = Font(name="Arial", size=11, bold=True, color="FFFFFFFF")
+                cell.fill = PatternFill(start_color="FF1F7A4B", end_color="FF1F7A4B", fill_type="solid")
+            else:
+                cell.font = Font(name="Arial", size=11, bold=True, color="FFFFFFFF")
+                cell.fill = PatternFill(start_color="FF366092", end_color="FF366092", fill_type="solid")
             cell.alignment = Alignment(horizontal="center", vertical="center")
             cell.border = Border(
                 left=Side(style="thin"), right=Side(style="thin"),
@@ -333,40 +356,94 @@ def generate_monthly_summary(month_year_str, records, slip_type="Input"):
             )
 
     from openpyxl.utils import get_column_letter
-    # Merge cells for unit headers SECOND
+    from openpyxl.styles import PatternFill as _PF_hdr, Font as _Fnt_hdr, Alignment as _Aln_hdr, Border as _Bdr_hdr, Side as _Sd_hdr
+
+    # 1-based column indices: row_data = [day] + ordered_agencies
+    # col 1 = Day, col 2 = ordered_agencies[0], ..., col N+1 = ordered_agencies[N-1]
+    # 'Total Weight (kg)'  = ordered_agencies[N-2]  → col N-2+2 = N
+    # 'Total Weight (MT)'  = ordered_agencies[N-1]  → col N-1+2 = N+1
+    N = len(ordered_agencies)
+    kg_col_idx = N       # col of 'Total Weight (kg)'
+    mt_col_idx = N + 1   # col of 'Total Weight (MT)'
+
+
+    _hdr_border  = _Bdr_hdr(left=_Sd_hdr(style="thin"), right=_Sd_hdr(style="thin"),
+                              top=_Sd_hdr(style="thin"),  bottom=_Sd_hdr(style="thin"))
+    _center_wrap = _Aln_hdr(horizontal="center", vertical="center", wrap_text=True)
+
+    # ── Set heading text & style BEFORE merging ──────────────────────────────
+    for col_i, label, color in [
+        (kg_col_idx, "Total Weight (kg)", "FF17375E"),
+        (mt_col_idx, "Total Weight (MT)", "FF1F7A4B"),
+    ]:
+        hdr_c = overall_sheet.cell(row=3, column=col_i)
+        hdr_c.value     = label
+        hdr_c.font      = _Fnt_hdr(name="Arial", size=11, bold=True, color="FFFFFFFF")
+        hdr_c.fill      = _PF_hdr(start_color=color, end_color=color, fill_type="solid")
+        hdr_c.alignment = _center_wrap
+        hdr_c.border    = _hdr_border
+
+    # ── Merge unit-name headers (horizontal) — use per_unit_agencies to get the same count ──
     start_col = 2
-    for unit_name, agencies in UNIT_AGENCIES.items():
-        count = sum(1 for a in agencies if a in pivot_all.columns and a != "Total Weight (kg)")
+    for unit_name, unit_ags in per_unit_agencies.items():
+        count = len(unit_ags)
         if count > 1:
-            overall_sheet.merge_cells(start_row=3, start_column=start_col, end_row=3, end_column=start_col + count - 1)
+            overall_sheet.merge_cells(start_row=3, start_column=start_col,
+                                       end_row=3,   end_column=start_col + count - 1)
         if count > 0:
             start_col += count
-            
+
     if leftovers and len(leftovers) > 1:
-        overall_sheet.merge_cells(start_row=3, start_column=start_col, end_row=3, end_column=start_col + len(leftovers) - 1)
-        
-    # Merge "Day (Date)" and "Total" vertically
-    total_col = len(unit_headers)
-    overall_sheet.merge_cells(start_row=3, start_column=1, end_row=4, end_column=1)
-    overall_sheet.merge_cells(start_row=3, start_column=total_col, end_row=4, end_column=total_col)
-    
+        overall_sheet.merge_cells(start_row=3, start_column=start_col,
+                                   end_row=3,   end_column=start_col + len(leftovers) - 1)
+
+    # ── Merge Day, kg, MT vertically (rows 3-4) AFTER setting their heading values ──
+    overall_sheet.merge_cells(start_row=3, start_column=1,          end_row=4, end_column=1)
+    overall_sheet.merge_cells(start_row=3, start_column=kg_col_idx, end_row=4, end_column=kg_col_idx)
+    overall_sheet.merge_cells(start_row=3, start_column=mt_col_idx, end_row=4, end_column=mt_col_idx)
+
+    # ── Data rows ──────────────────────────────────────────────────────────────
+    from openpyxl.styles import PatternFill as _PF
+    MT_FILL      = _PF(start_color="FFE2EFDA", end_color="FFE2EFDA", fill_type="solid")
+    MT_BOLD_FILL = _PF(start_color="FF1F7A4B", end_color="FF1F7A4B", fill_type="solid")
+
     current_row = 5
     for day in pivot_all.index:
-        row_data = [day]
-        for agency in ordered_agencies:
-            row_data.append(pivot_all.loc[day, agency])
+        row_data = [day] + [pivot_all.loc[day, a] for a in ordered_agencies]
         overall_sheet.append(row_data)
         apply_data_row_formatting(overall_sheet, current_row)
-        
+
         if day == 'Total':
-            for col in range(1, len(agency_headers) + 1):
-                overall_sheet.cell(row=current_row, column=col).font = BOLD_FONT
+            for col in range(1, mt_col_idx + 1):
+                c = overall_sheet.cell(row=current_row, column=col)
+                if col == mt_col_idx:
+                    c.font = _Fnt_hdr(name="Arial", size=11, bold=True, color="FFFFFFFF")
+                    c.fill = MT_BOLD_FILL
+                else:
+                    c.font = BOLD_FONT
+        else:
+            overall_sheet.cell(row=current_row, column=mt_col_idx).fill = MT_FILL
         current_row += 1
-        
+
+    # ── Explicitly write MT Total (most reliable — avoids pandas NaN propagation issues) ──
+    total_row_num = current_row - 1   # current_row was incremented after Total row was written
+    # Read kg total from the sheet cell that was already written (guaranteed numeric)
+    kg_total_cell = overall_sheet.cell(row=total_row_num, column=kg_col_idx)
+    kg_total_val  = kg_total_cell.value or 0
+    mt_total_val  = round(float(kg_total_val) / 1000, 2)
+    from openpyxl.styles import Alignment as _Aln_t, Border as _Bdr_t, Side as _Sd_t
+    mt_total_cell = overall_sheet.cell(row=total_row_num, column=mt_col_idx)
+    mt_total_cell.value     = mt_total_val
+    mt_total_cell.font      = _Fnt_hdr(name="Arial", size=11, bold=True, color="FFFFFFFF")
+    mt_total_cell.fill      = MT_BOLD_FILL
+    mt_total_cell.alignment = _Aln_t(horizontal="center", vertical="center")
+    mt_total_cell.border    = _Bdr_t(left=_Sd_t(style="thin"), right=_Sd_t(style="thin"),
+                                      top=_Sd_t(style="thin"),  bottom=_Sd_t(style="thin"))
+
     widths = [15] + [20] * len(ordered_agencies)
     for i, width in enumerate(widths):
-        col_letter = get_column_letter(i + 1)
-        overall_sheet.column_dimensions[col_letter].width = width
+        overall_sheet.column_dimensions[get_column_letter(i + 1)].width = width
+
 
     # --- 2. Unit-Specific Summaries ---
     units = df['processing_unit'].unique()
@@ -389,11 +466,16 @@ def generate_monthly_summary(month_year_str, records, slip_type="Input"):
         if 'Other' in pivot.columns:
             pivot = pivot.drop(columns=['Other'])
         
-        # Add Total column
+        # Add Total kg column
         pivot['Total Weight (kg)'] = pivot.sum(axis=1)
         
         # Add Total row
         pivot.loc['Total'] = pivot.sum()
+        
+        # Add MT column (kg / 1000, rounded to 2 dp)
+        pivot['Total Weight (MT)'] = (pivot['Total Weight (kg)'] / 1000).round(2)
+        # Explicitly set Total row MT (pandas may not propagate new columns to .loc-set rows)
+        pivot.loc['Total', 'Total Weight (MT)'] = round(float(pivot.loc['Total', 'Total Weight (kg)']) / 1000, 2)
         
         agencies = list(pivot.columns)
         headers = ["Day (Date)"] + agencies
@@ -408,7 +490,32 @@ def generate_monthly_summary(month_year_str, records, slip_type="Input"):
             header_fill = HEADER_FILL_GURGAON
             
         apply_header_formatting(sheet, 3, header_fill)
-        
+
+        from openpyxl.styles import PatternFill as _PF2, Font as _Font2, Alignment as _Aln2, Border as _Bdr2, Side as _Sd2
+        _MT_FILL      = _PF2(start_color="FFE2EFDA", end_color="FFE2EFDA", fill_type="solid")
+        _MT_BOLD_FILL = _PF2(start_color="FF1F7A4B", end_color="FF1F7A4B", fill_type="solid")
+        _mt_col_idx   = len(headers)  # 1-based index of MT column
+        _kg_col_idx   = len(headers) - 1  # 1-based index of kg column
+        _u_center     = _Aln2(horizontal="center", vertical="center", wrap_text=True)
+        _u_border     = _Bdr2(left=_Sd2(style="thin"), right=_Sd2(style="thin"),
+                               top=_Sd2(style="thin"), bottom=_Sd2(style="thin"))
+
+        # Explicitly style kg header — dark navy so it stands out as a totals column
+        _kg_hdr = sheet.cell(row=3, column=_kg_col_idx)
+        _kg_hdr.value     = "Total Weight (kg)"
+        _kg_hdr.font      = _Font2(name="Arial", size=11, bold=True, color="FFFFFFFF")
+        _kg_hdr.fill      = _PF2(start_color="FF17375E", end_color="FF17375E", fill_type="solid")
+        _kg_hdr.alignment = _u_center
+        _kg_hdr.border    = _u_border
+
+        # Explicitly style MT header — green
+        _mt_hdr = sheet.cell(row=3, column=_mt_col_idx)
+        _mt_hdr.value     = "Total Weight (MT)"
+        _mt_hdr.font      = _Font2(name="Arial", size=11, bold=True, color="FFFFFFFF")
+        _mt_hdr.fill      = _MT_BOLD_FILL
+        _mt_hdr.alignment = _u_center
+        _mt_hdr.border    = _u_border
+
         current_row = 4
         for day in pivot.index:
             row_data = [day]
@@ -417,18 +524,37 @@ def generate_monthly_summary(month_year_str, records, slip_type="Input"):
             sheet.append(row_data)
             apply_data_row_formatting(sheet, current_row)
             
-            # Make Total row bold
+            # Make Total row bold; give MT cell a green fill
             if day == 'Total':
                 for col in range(1, len(headers) + 1):
-                    sheet.cell(row=current_row, column=col).font = BOLD_FONT
+                    cell = sheet.cell(row=current_row, column=col)
+                    if col == _mt_col_idx:
+                        cell.font = _Font2(name="Arial", size=11, bold=True, color="FFFFFFFF")
+                        cell.fill = _MT_BOLD_FILL
+                    else:
+                        cell.font = BOLD_FONT
+            else:
+                sheet.cell(row=current_row, column=_mt_col_idx).fill = _MT_FILL
                     
             current_row += 1
+        # Explicitly write MT Total for the unit sheet (avoids pandas NaN propagation)
+        total_row_num = current_row - 1
+        kg_total_cell = sheet.cell(row=total_row_num, column=_kg_col_idx)
+        kg_total_val  = kg_total_cell.value or 0
+        mt_total_val  = round(float(kg_total_val) / 1000, 2)
+        
+        mt_total_cell = sheet.cell(row=total_row_num, column=_mt_col_idx)
+        mt_total_cell.value     = mt_total_val
+        mt_total_cell.font      = _Font2(name="Arial", size=11, bold=True, color="FFFFFFFF")
+        mt_total_cell.fill      = _MT_BOLD_FILL
+        mt_total_cell.alignment = _u_center
+        mt_total_cell.border    = _u_border
             
         # Set column widths
+        from openpyxl.utils import get_column_letter as _gcl
         widths = [15] + [20] * len(agencies)
         for i, width in enumerate(widths):
-            col_letter = chr(65 + i) if i < 26 else chr(64 + i // 26) + chr(65 + (i % 26))
-            sheet.column_dimensions[col_letter].width = width
+            sheet.column_dimensions[_gcl(i + 1)].width = width
 
     if len(wb.sheetnames) > 1 and default_sheet.title in wb.sheetnames:
         wb.remove(default_sheet)

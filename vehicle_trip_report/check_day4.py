@@ -1,0 +1,1 @@
+import sys; sys.path.append('.'); from database.db import get_connection; conn=get_connection(); cur=conn.cursor(); cur.execute("SELECT COUNT(1) FROM vehicle_trips WHERE trip_date='04-09-2026'"); print('Day 4 count:', cur.fetchone()[0]); cur.close(); conn.close()
