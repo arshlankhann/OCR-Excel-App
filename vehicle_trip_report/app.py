@@ -218,10 +218,17 @@ if menu == "Upload & OCR":
                     from PIL import Image
                     display_img = Image.open(slip['image_path'])
                     st.image(display_img, use_column_width=True)
-                    if st.button("↻ Rotate Image", key=f"rot_{slip['id']}"):
-                        display_img = display_img.rotate(-90, expand=True)
-                        display_img.save(slip['image_path'])
-                        st.rerun()
+                    rot_col1, rot_col2 = st.columns(2)
+                    with rot_col1:
+                        if st.button("↺ Rotate Left", key=f"rot_l_{slip['id']}"):
+                            display_img = display_img.rotate(90, expand=True)
+                            display_img.save(slip['image_path'])
+                            st.rerun()
+                    with rot_col2:
+                        if st.button("↻ Rotate Right", key=f"rot_r_{slip['id']}"):
+                            display_img = display_img.rotate(-90, expand=True)
+                            display_img.save(slip['image_path'])
+                            st.rerun()
                     
                 with col_form:
                     with st.form(key=f"form_{slip['id']}"):
