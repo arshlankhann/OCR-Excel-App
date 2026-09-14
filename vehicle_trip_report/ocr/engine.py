@@ -23,9 +23,8 @@ def rotate_image_file(image_path, angle):
 
 def process_slip(image_path, ocr_engine):
     """
-    Processes a weighment slip image. Tries 4 rotations (0, 90, 180, 270)
-    to find the one that yields the most OCR fields. If the best rotation
-    is not 0, it permanently rotates the image so it is displayed horizontally.
+    Processes a weighment slip image using PaddleOCR's built-in angle classifier.
+    Tests up to 3 preprocessing variations and stops early if all fields are found.
     """
     if ocr_engine is None:
         return {"error": "OCR engine not initialized."}
@@ -35,71 +34,30 @@ def process_slip(image_path, ocr_engine):
             "rst_no": None,
             "vehicle_no": None,
             "net_weight": None,
-            "score": -1
+            "agency_name": None
         }
-        best_angle = 0
         
-        # Test 4 standard rotations
-        for angle in [0, 90, 180, 270]:
-            img = cv2.imread(image_path)
-            if img is None:
+        image_versions = preprocess_image(image_path)
+        
+        for img_version in image_versions:
+            # cls=True uses PaddleOCR's angle classifier
+            result = ocr_engine.ocr(img_version, cls=True)
+            if not result or not result[0]:
                 continue
                 
-            if angle == 90:
-                img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
-            elif angle == 180:
-                img = cv2.rotate(img, cv2.ROTATE_180)
-            elif angle == 270:
-                img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
-                
-            temp_path = os.path.join(tempfile.gettempdir(), f"temp_rot_{angle}.jpg")
-            cv2.imwrite(temp_path, img)
+            text_blocks = [line[1][0] for line in result[0]]
+            extracted = extract_fields(text_blocks)
             
-            image_versions = preprocess_image(temp_path)
-            current_results = {"rst_no": None, "vehicle_no": None, "net_weight": None, "agency_name": None}
+            if not best_overall_results["rst_no"]: best_overall_results["rst_no"] = extracted.get("rst_no")
+            if not best_overall_results["vehicle_no"]: best_overall_results["vehicle_no"] = extracted.get("vehicle_no")
+            if not best_overall_results["net_weight"]: best_overall_results["net_weight"] = extracted.get("net_weight")
+            if not best_overall_results.get("agency_name"): best_overall_results["agency_name"] = extracted.get("agency_name")
             
-            for img_version in image_versions:
-                result = ocr_engine.ocr(img_version, cls=True)
-                if not result or not result[0]:
-                    continue
-                    
-                text_blocks = [line[1][0] for line in result[0]]
-                extracted = extract_fields(text_blocks)
+            # If we found all 3 required fields, we can stop immediately
+            if best_overall_results["rst_no"] and best_overall_results["vehicle_no"] and best_overall_results["net_weight"]:
+                break
                 
-                if not current_results["rst_no"]: current_results["rst_no"] = extracted["rst_no"]
-                if not current_results["vehicle_no"]: current_results["vehicle_no"] = extracted["vehicle_no"]
-                if not current_results["net_weight"]: current_results["net_weight"] = extracted["net_weight"]
-                if not current_results.get("agency_name"): current_results["agency_name"] = extracted.get("agency_name")
-                
-                if current_results["rst_no"] and current_results["vehicle_no"] and current_results["net_weight"]:
-                    break
-            
-            # Delete temporary file
-            try:
-                os.remove(temp_path)
-            except:
-                pass
-                
-            # Score this rotation
-            score = sum(1 for v in current_results.values() if v)
-            if score > best_overall_results["score"]:
-                best_overall_results = current_results
-                best_overall_results["score"] = score
-                best_angle = angle
-                
-            if score == 3:
-                break # Found everything, no need to test other rotations
-                
-        # If the best angle was not 0, permanently rotate the original image
-        if best_angle != 0:
-            rotate_image_file(image_path, best_angle)
-            
-        return {
-            "rst_no": best_overall_results["rst_no"],
-            "vehicle_no": best_overall_results["vehicle_no"],
-            "net_weight": best_overall_results["net_weight"],
-            "agency_name": best_overall_results.get("agency_name")
-        }
+        return best_overall_results
         
     except Exception as e:
         print(f"Error during OCR processing: {e}")
