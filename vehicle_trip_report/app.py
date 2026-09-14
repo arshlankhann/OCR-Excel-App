@@ -215,19 +215,21 @@ if menu == "Upload & OCR":
                 col_img, col_form = st.columns([1, 2])
                 
                 with col_img:
-                    from PIL import Image
-                    display_img = Image.open(slip['image_path'])
-                    st.image(display_img, use_column_width=True)
+                    st.image(slip['image_path'], use_column_width=True)
                     rot_col1, rot_col2 = st.columns(2)
                     with rot_col1:
                         if st.button("↺ Rotate Left", key=f"rot_l_{slip['id']}"):
-                            display_img = display_img.rotate(90, expand=True)
-                            display_img.save(slip['image_path'])
+                            from PIL import Image
+                            with Image.open(slip['image_path']) as img:
+                                img = img.rotate(90, expand=True)
+                                img.save(slip['image_path'])
                             st.rerun()
                     with rot_col2:
                         if st.button("↻ Rotate Right", key=f"rot_r_{slip['id']}"):
-                            display_img = display_img.rotate(-90, expand=True)
-                            display_img.save(slip['image_path'])
+                            from PIL import Image
+                            with Image.open(slip['image_path']) as img:
+                                img = img.rotate(-90, expand=True)
+                                img.save(slip['image_path'])
                             st.rerun()
                     
                 with col_form:
