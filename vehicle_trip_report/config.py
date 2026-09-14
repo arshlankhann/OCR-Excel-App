@@ -32,7 +32,7 @@ ROW_HEIGHT = 160 # Points in Excel, enough to fit 200px height
 # Pre-populated dropdown lists (can be extended)
 UNIT_AGENCIES = {
     "Pratapgarh": ["SVN", "J.P Bros", "Government", "Other"],
-    "Mujeri": ["V S Waste", "Tractor", "Government", "Other"],
+    "Mujeri": ["V S Waste", "Tractor", "Government", "SVN", "Other"],
     "Gurgaon Paper Mills": ["Government", "Other"]
 }
 

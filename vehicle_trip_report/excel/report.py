@@ -279,10 +279,12 @@ def generate_monthly_summary(month_year_str, records, slip_type="Input"):
     overall_sheet['A1'].font = BOLD_FONT
     overall_sheet.append([])
     
-    pivot_all = pd.pivot_table(df, values='net_weight', index='day', columns='agency_name', aggfunc='sum', fill_value=0)
+    df['unit_agency'] = df['processing_unit'] + "_" + df['agency_name']
+    pivot_all = pd.pivot_table(df, values='net_weight', index='day', columns='unit_agency', aggfunc='sum', fill_value=0)
     
-    if 'Other' in pivot_all.columns:
-        pivot_all = pivot_all.drop(columns=['Other'])
+    cols_to_drop = [c for c in pivot_all.columns if c.endswith("_Other")]
+    if cols_to_drop:
+        pivot_all = pivot_all.drop(columns=cols_to_drop)
         
     pivot_all['Total Weight (kg)'] = pivot_all.sum(axis=1)
     pivot_all.loc['Total'] = pivot_all.sum()
@@ -299,25 +301,27 @@ def generate_monthly_summary(month_year_str, records, slip_type="Input"):
     per_unit_agencies = {}   # unit_name -> list of agencies actually used
 
     for unit_name, agencies in UNIT_AGENCIES.items():
-        # Only add agencies not yet in ordered_agencies (avoids double-counting shared ones like Government)
-        unit_agencies_in_data = [a for a in agencies
-                                  if a in pivot_all.columns
-                                  and a not in ("Total Weight (kg)", "Total Weight (MT)")
-                                  and a not in ordered_agencies]
+        unit_agencies_in_data = []
+        for a in agencies:
+            col_name = f"{unit_name}_{a}"
+            if col_name in pivot_all.columns and col_name not in ordered_agencies:
+                unit_agencies_in_data.append(a)
+                ordered_agencies.append(col_name)
+                
         per_unit_agencies[unit_name] = unit_agencies_in_data
         if unit_agencies_in_data:
-            ordered_agencies.extend(unit_agencies_in_data)
             unit_headers.extend([unit_name] + [" "] * (len(unit_agencies_in_data) - 1))
             agency_headers.extend(unit_agencies_in_data)
 
     # Add any leftovers that might not be mapped
-    leftovers = [a for a in pivot_all.columns
-                 if a not in ordered_agencies
-                 and a not in ("Total Weight (kg)", "Total Weight (MT)")]
+    leftovers = [c for c in pivot_all.columns
+                 if c not in ordered_agencies
+                 and c not in ("Total Weight (kg)", "Total Weight (MT)")]
     if leftovers:
         ordered_agencies.extend(leftovers)
+        leftover_agencies = [c.split('_', 1)[1] if '_' in c else c for c in leftovers]
         unit_headers.extend(["Other"] + [" "] * (len(leftovers) - 1))
-        agency_headers.extend(leftovers)
+        agency_headers.extend(leftover_agencies)
 
     ordered_agencies.append("Total Weight (kg)")
     unit_headers.append("Total Weight (kg)")
