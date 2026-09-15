@@ -156,6 +156,7 @@ def generate_daily_report(date_str, records, slip_type="Input"):
         stats = [
             ["Total Trips", total_trips],
             ["Total Net Weight (kg)", total_weight],
+            ["Total Net Weight (MT)", round(total_weight / 1000, 2)],
             ["Average Net Weight per Trip", round(avg_weight, 5)]
         ]
         
@@ -171,7 +172,7 @@ def generate_daily_report(date_str, records, slip_type="Input"):
         summary_sheet.cell(row=current_row, column=1, value="Agency-wise Breakdown").font = BOLD_FONT
         current_row += 1
         
-        headers = ["Agency Name", "No. of Trips", "Total Net Weight (kg)", "% of Total Weight"]
+        headers = ["Agency Name", "No. of Trips", "Total Net Weight (kg)", "Total Net Weight (MT)", "% of Total Weight"]
         summary_sheet.append(headers)
         apply_header_formatting(summary_sheet, current_row, SUMMARY_HEADER_FILL)
         current_row += 1
@@ -183,14 +184,14 @@ def generate_daily_report(date_str, records, slip_type="Input"):
         
         for _, row in agency_grouped.iterrows():
             pct = row['weight'] / total_weight if total_weight > 0 else 0
-            summary_sheet.append([row['agency_name'], row['trips'], row['weight'], pct])
+            summary_sheet.append([row['agency_name'], row['trips'], row['weight'], round(row['weight'] / 1000, 2), pct])
             apply_data_row_formatting(summary_sheet, current_row)
             summary_sheet.cell(row=current_row, column=1).alignment = LEFT_ALIGN
             current_row += 1
             
-        summary_sheet.append(["Total", total_trips, total_weight, 1])
+        summary_sheet.append(["Total", total_trips, total_weight, round(total_weight / 1000, 2), 1])
         apply_data_row_formatting(summary_sheet, current_row)
-        for col in range(1, 5):
+        for col in range(1, 6):
             summary_sheet.cell(row=current_row, column=col).font = BOLD_FONT
         summary_sheet.cell(row=current_row, column=1).alignment = LEFT_ALIGN
         current_row += 2
@@ -199,7 +200,7 @@ def generate_daily_report(date_str, records, slip_type="Input"):
         summary_sheet.cell(row=current_row, column=1, value="Reported By - Breakdown").font = BOLD_FONT
         current_row += 1
         
-        headers = ["Reported By", "No. of Trips", "Total Net Weight (kg)"]
+        headers = ["Reported By", "No. of Trips", "Total Net Weight (kg)", "Total Net Weight (MT)"]
         summary_sheet.append(headers)
         apply_header_formatting(summary_sheet, current_row, SUMMARY_HEADER_FILL)
         current_row += 1
@@ -210,7 +211,7 @@ def generate_daily_report(date_str, records, slip_type="Input"):
         ).reset_index()
         
         for _, row in reporter_grouped.iterrows():
-            summary_sheet.append([row['reported_by'], row['trips'], row['weight']])
+            summary_sheet.append([row['reported_by'], row['trips'], row['weight'], round(row['weight'] / 1000, 2)])
             apply_data_row_formatting(summary_sheet, current_row)
             summary_sheet.cell(row=current_row, column=1).alignment = LEFT_ALIGN
             current_row += 1
@@ -221,7 +222,7 @@ def generate_daily_report(date_str, records, slip_type="Input"):
         summary_sheet.cell(row=current_row, column=1, value="Vehicle-wise Trip Count (Repeat Vehicles)").font = BOLD_FONT
         current_row += 1
         
-        headers = ["Vehicle Number", "No. of Trips", "Total Net Weight (kg)"]
+        headers = ["Vehicle Number", "No. of Trips", "Total Net Weight (kg)", "Total Net Weight (MT)"]
         summary_sheet.append(headers)
         apply_header_formatting(summary_sheet, current_row, SUMMARY_HEADER_FILL)
         current_row += 1
@@ -232,12 +233,12 @@ def generate_daily_report(date_str, records, slip_type="Input"):
         ).reset_index().sort_values('trips', ascending=False)
         
         for _, row in vehicle_grouped.iterrows():
-            summary_sheet.append([row['vehicle_no'], row['trips'], row['weight']])
+            summary_sheet.append([row['vehicle_no'], row['trips'], row['weight'], round(row['weight'] / 1000, 2)])
             apply_data_row_formatting(summary_sheet, current_row)
             summary_sheet.cell(row=current_row, column=1).alignment = LEFT_ALIGN
             current_row += 1
             
-        set_column_widths(summary_sheet, ["A", "B", "C", "D"], [35, 15, 25, 20])
+        set_column_widths(summary_sheet, ["A", "B", "C", "D", "E"], [35, 15, 25, 25, 20])
 
     if len(wb.sheetnames) > 1 and default_sheet.title in wb.sheetnames:
         wb.remove(default_sheet)
