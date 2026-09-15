@@ -34,7 +34,7 @@ REPORTER_MUJERI     = "V S Waste"
 
 # (agency_name, total_weight_kg, num_trips, processing_unit, reported_by)
 SEP12_DATA = [
-    ("SVN",        179670, 12, "Pratapgarh", REPORTER_PRATAPGARH),
+    ("SVN",        179670, 12, "Mujeri",     REPORTER_PRATAPGARH),
     ("V S Waste",   77460,  6, "Mujeri",     REPORTER_MUJERI),
     ("Government",  11380,  1, "Mujeri",     REPORTER_MUJERI),
     ("Tractor",     85730, 56, "Mujeri",     "Tractor"),

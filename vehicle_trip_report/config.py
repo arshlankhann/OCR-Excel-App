@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables (override ensures it gets the latest .env without restarting)
+load_dotenv(override=True)
 
 # Base directories
 BASE_DIR = Path(__file__).parent.absolute()
@@ -31,9 +31,9 @@ ROW_HEIGHT = 160 # Points in Excel, enough to fit 200px height
 
 # Pre-populated dropdown lists (can be extended)
 UNIT_AGENCIES = {
-    "Pratapgarh": ["SVN", "J.P Bros", "Government", "Other"],
-    "Mujeri": ["V S Waste", "Tractor", "Government", "SVN", "Other"],
-    "Gurgaon Paper Mills": ["Government", "Other"]
+    "Pratapgarh": ["SVN", "J.P Bros", "Govt Vehicle", "Other"],
+    "Mujeri": ["V S Waste", "Tractor", "Govt Vehicle", "SVN", "J.P Bros", "Other"],
+    "Gurgaon Paper Mills": ["Govt Vehicle", "Other"]
 }
 
 OUTPUT_UNIT_AGENCIES = {

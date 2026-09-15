@@ -109,7 +109,7 @@ def extract_fields(text_blocks):
             agency_name = "Tractor"
             break
         elif "MCF" in b_up or "GOV" in b_up or "GOVERNMENT" in b_up:
-            agency_name = "Government"
+            agency_name = "Govt Vehicle"
             break
 
     return {

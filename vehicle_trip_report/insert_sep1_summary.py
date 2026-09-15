@@ -1,40 +1,37 @@
 """
-Insert Sep 13 Manual Summary Data into vehicle_trips
+Insert Sep 1 Manual Summary Data into vehicle_trips
 =====================================================
 Data provided:
-  V S Waste = 110610 kg,  8 trips  -> Mujeri
-  SVN       = 215070 kg, 15 trips  -> Pratapgarh
-  Tractor   =  30970 kg, 27 trips  -> Mujeri
-  J.P Bros  = 135170 kg,  6 trips  -> Pratapgarh
-  Total     = 4,91,820 kg
+  SVN       = 122790 kg, 6 trips  -> Pratapgarh
+  J.P Bros  = 313730 kg, 17 trips  -> Pratapgarh
+  Total     = 436520 kg
 
 Usage:
-    python insert_sep13_summary.py              # insert (skip if date exists)
-    python insert_sep13_summary.py --overwrite  # delete & re-insert
-    python insert_sep13_summary.py --dry-run    # preview only
+    python insert_sep1_summary.py              # insert (skip if date exists)
+    python insert_sep1_summary.py --overwrite  # delete & re-insert
+    python insert_sep1_summary.py --dry-run    # preview only
 """
 
 import os, sys, argparse
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from database.db import get_connection
 
-TRIP_DATE   = "13-09-2026"
+TRIP_DATE   = "01-09-2026"
 TRIP_TIME   = "08:00:00"
 SLIP_TYPE   = "Input"
 
 # (agency_name, total_weight_kg, num_trips, processing_unit, reported_by)
-SEP13_DATA = [
-    ("V S Waste",  110610,  8, "Mujeri",     "V S Waste"),
-    ("SVN",        215070, 15, "Mujeri",     "Krishan JE"),
-    ("Tractor",     30970, 27, "Mujeri",     "Tractor"),
-    ("J.P Bros",   135170,  6, "Pratapgarh", "Krishan JE"),
+SEP1_DATA = [
+    ("SVN",        122790,  6, "Pratapgarh", "Krishan JE"),
+    ("J.P Bros",   313730, 17, "Pratapgarh", "Krishan JE"),
+    ("V S Waste",  142060, 11, "Mujeri",     "V S Waste"),
 ]
 
 
 def build_records():
     records = []
-    rst_counter = 92000  # "M" prefix + high number to avoid clashes
-    for agency, total_wt, num_trips, unit, reporter in SEP13_DATA:
+    rst_counter = 93000  # "M" prefix + high number to avoid clashes
+    for agency, total_wt, num_trips, unit, reporter in SEP1_DATA:
         base_wt   = total_wt // num_trips
         remainder = total_wt  - base_wt * num_trips
         for i in range(num_trips):
@@ -58,14 +55,14 @@ def build_records():
 def run(dry_run=False, overwrite=False):
     records = build_records()
 
-    print(f"\n{'DRY RUN - ' if dry_run else ''}Sep 13 Summary Import")
+    print(f"\n{'DRY RUN - ' if dry_run else ''}Sep 1 Summary Import")
     print("=" * 60)
     print(f"\n{'Agency':<15} {'Unit':<12} {'Trips':>6} {'Total Wt (kg)':>14}")
     print("-" * 50)
-    for agency, total_wt, num_trips, unit, _ in SEP13_DATA:
+    for agency, total_wt, num_trips, unit, _ in SEP1_DATA:
         print(f"{agency:<15} {unit:<12} {num_trips:>6} {total_wt:>14,}")
     print("-" * 50)
-    print(f"{'TOTAL':<15} {'':<12} {sum(x[2] for x in SEP13_DATA):>6} {sum(x[1] for x in SEP13_DATA):>14,}")
+    print(f"{'TOTAL':<15} {'':<12} {sum(x[2] for x in SEP1_DATA):>6} {sum(x[1] for x in SEP1_DATA):>14,}")
     print(f"\nTotal records to insert: {len(records)}")
 
     if dry_run:
