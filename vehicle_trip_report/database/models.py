@@ -55,12 +55,15 @@ def get_records_by_date(trip_date, slip_type="Input"):
     conn.close()
     return records
 
-def get_records_by_month(month_year_str, slip_type="Input"):
+def get_records_by_month(month_year_str, slip_type="Input", processing_unit=None):
     """Retrieves all records for a specific month and year (format: MM-YYYY)."""
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     search_pattern = f"%{month_year_str}"
-    cursor.execute("SELECT * FROM vehicle_trips WHERE trip_date LIKE %s AND slip_type = %s ORDER BY trip_date ASC, s_no ASC", (search_pattern, slip_type))
+    if processing_unit and processing_unit != "All Units":
+        cursor.execute("SELECT * FROM vehicle_trips WHERE trip_date LIKE %s AND slip_type = %s AND processing_unit = %s ORDER BY trip_date ASC, s_no ASC", (search_pattern, slip_type, processing_unit))
+    else:
+        cursor.execute("SELECT * FROM vehicle_trips WHERE trip_date LIKE %s AND slip_type = %s ORDER BY trip_date ASC, s_no ASC", (search_pattern, slip_type))
     records = [dict(row) for row in cursor.fetchall()]
     cursor.close()
     conn.close()

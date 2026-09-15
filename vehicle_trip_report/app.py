@@ -480,19 +480,26 @@ elif menu == "Excel Reports":
     elif report_type == "Monthly Summary":
         import calendar
         
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         with col1:
             month = st.selectbox("Select Month", range(1, 13), index=datetime.now().month - 1, format_func=lambda x: calendar.month_name[x])
         with col2:
             year = st.selectbox("Select Year", range(2023, datetime.now().year + 2), index=datetime.now().year - 2023)
+        with col3:
+            if report_slip_type == "Output":
+                units_list = ["All Units", "Pratapgarh", "Mujeri"]
+            else:
+                units_list = ["All Units", "Pratapgarh", "Mujeri", "Gurgaon Paper Mills"]
+            selected_unit = st.selectbox("Select Processing Unit", units_list)
             
         month_year_str = f"{month:02d}-{year}"
-        report_name = f"{report_slip_type}_Monthly_Summary_{month_year_str}.xlsx"
+        unit_suffix = "" if selected_unit == "All Units" else f"_{selected_unit.replace(' ', '')}"
+        report_name = f"{report_slip_type}_Monthly_Summary_{month_year_str}{unit_suffix}.xlsx"
         report_path = get_report_path(report_name)
         
         st.write(f"**Target File:** `{report_name}`")
         
-        records = get_records_by_month(month_year_str, slip_type=report_slip_type)
+        records = get_records_by_month(month_year_str, slip_type=report_slip_type, processing_unit=selected_unit)
         
         if not records:
             st.warning(f"No records found in database for {calendar.month_name[month]} {year}")
